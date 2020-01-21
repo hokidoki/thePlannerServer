@@ -40,10 +40,51 @@ module.exports = {
 
         connection.query(query,(err,result)=>{
             if(err){
+                console.log(err);
+                next(err);
+            }else if(result[0].valid === 1){
+                res.send({
+                    id : {
+                        valid : false
+                    }
+                    
+                });
+            }else{
+                next();
+            }
+        })
+    },
+    emailCheck : (req,res,next) =>{
+        const { email } = req.body;
+        const query = `select count(*) as valid from account where email = '${email}'`;
+
+        connection.query(query,(err,result)=>{
+            if(err){
+                console.log(err);
+                next(err);
+            }else if(result[0].valid === 1){
+                res.send({
+                    id : {
+                        valid : true
+                    },
+                    email : {
+                        valid : false
+                    }
+                })
+            }else{
+                next();
+            }
+        })
+    },signUp : (req,res,next)=>{
+        const {id, password, email, termsStatus, nickName} = req.body;
+    
+        const procedure = `call signup('${id}','${password}','${email}','${termsStatus}','${nickName}')`
+        
+        connection.query(procedure,(err,result)=>{
+            if(err){
                 next(err);
             }else{
-                console.log(result[0].valid)
-                res.send(result[0]);
+                next();
             }
         })
     }
