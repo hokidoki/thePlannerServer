@@ -3,6 +3,7 @@ const router = express.Router();
 const idCheck = require('../../public/db/users').idCheck;
 const signUp = require('../../public/db/users').signUp;
 const emailCheck = require('../../public/db/users').emailCheck;
+const logoutChecker = require('../api/auth/jwt').logoutChecker;
 
 router.post('/idcheck',idCheck,(req,res)=>{
     res.send({
@@ -15,6 +16,7 @@ router.post('/idcheck',idCheck,(req,res)=>{
     });
 });
 
-router.post('/',idCheck,emailCheck,signUp);
+router.post('/',logoutChecker,idCheck,emailCheck,signUp);
 
 module.exports = router;
+

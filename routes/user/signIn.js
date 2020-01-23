@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const verify = require('../../public/db/users').verify;
+const userInfoCheck = require('../../public/db/users').userInfoCheck;
+const jwtSender = require('../api/auth/jwt').sender;
 
-router.post('/',verify,)
+router.post('/',userInfoCheck,jwtSender);
 
 module.exports = router;

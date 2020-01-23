@@ -1,38 +1,27 @@
 const mysql_dbc = require('./dbConfig')();
 const connection = mysql_dbc.init();
-const jwt = require('jsonwebtoken');
 
 
 module.exports = {
-    verify : (req,res,next) =>{
-        const {userId,userPassword} = req.body;
+    userInfoCheck : (req,res,next) =>{
+        const {id,pw} = req.body;
+        console.log(req.cookies)
         const procedure = `
-            call getUserInfo('${userId}','${userPassword}')
-        `;
+                call getUserInfo('${id}','${pw}')
+            `;
+        console.log(id,pw)
         connection.query(procedure,(err,result)=>{
-            if(err){
-                next(err)
-            }
-    
             if(result[0][0].valid === 1){
-                const { nick_name, id } = result[0][0];
-                const sign = req.app.get('jwt-secret'); 
-                console.log(`verify ${userId}`);
-                
-                const token = jwt.sign({
-                    userId : id
-                },sign,{
-                    expiresIn : '5m'
-                })
-    
-                res.cookie('userToken',token);
-                res.send(nick_name);
-                
+                next();
             }else{
-                console.log(`not verify ${userId}`);
-                res.status('403').send('아이디 혹은 비밀번호를 확인하세요.');
+                console.log(`id : ${id} 접속실패`);
+                res.send({
+                    loginSuccess : true,
+                    failedReason : null
+                })
             }
         })
+
     },
     idCheck : (req,res,next)=>{
         const { id } = req.body;
@@ -46,8 +35,10 @@ module.exports = {
                 res.send({
                     id : {
                         valid : false
+                    },
+                    email : {
+                        valid : false
                     }
-                    
                 });
             }else{
                 next();
@@ -57,7 +48,6 @@ module.exports = {
     emailCheck : (req,res,next) =>{
         const { email } = req.body;
         const query = `select count(*) as valid from account where email = '${email}'`;
-
         connection.query(query,(err,result)=>{
             if(err){
                 console.log(err);
@@ -76,13 +66,19 @@ module.exports = {
             }
         })
     },signUp : (req,res,next)=>{
-        const {id, password, email, termsStatus, nickName} = req.body;
-    
-        const procedure = `call signup('${id}','${password}','${email}','${termsStatus}','${nickName}')`
+        const {id, password, email, termsStatus, nickname} = req.body;
+        let term = 0;
+        if(termsStatus === false){
+            next(new Error("올바르지 못한 접근입니다."))
+        }else{
+            term = 1;
+        }
+        const procedure = `call signUp('${id}','${password}','${nickname}','${email}',${term})`
         
-        connection.query(procedure,(err,result)=>{
+        connection.query(procedure,(err)=>{
             if(err){
-                next(err);
+                console.log(err);
+                next(new Error("올바르지 못한 가입 접근입니다.."));
             }else{
                 next();
             }

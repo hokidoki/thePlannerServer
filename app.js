@@ -18,7 +18,11 @@ const signUp = require('./routes/user/signUp');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(cors());
+let corsOptions = {
+  origin:'http://localhost:3001', // 허락하고자 하는 요청 주소
+  credentials: true // true로 하면 설정한 내용을 response 헤더에 추가 해줍니다.
+} 
+app.use(cors(corsOptions));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -31,12 +35,6 @@ app.set('jwt-secret',config.secret);
 //route
 app.use('/signin',signIn);
 app.use('/signup',signUp);
-
-// app.use('/',function(req, res, next) {
-//   var err = new Error('Not Found - from app.js');
-//   err.status = 404;
-//   next(err);}
-// )
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
