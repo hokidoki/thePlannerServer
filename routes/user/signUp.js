@@ -5,7 +5,9 @@ const signUp = require('../../public/db/users').signUp;
 const emailCheck = require('../../public/db/users').emailCheck;
 const logoutChecker = require('../api/auth/jwt').logoutChecker;
 const postEmail = require('../api/auth/email').postEmail;
-const emailVerify = require('../../public/db/users').emailVerify;
+const validEmailConfirmaition = require('../../public/db/users').validEmailConfirmaition;
+const emailVerifySender = require('../api/auth/jwt').emailVerifySender;
+const emailAuthentication = require('../../public/db/users').emailAuthentication;
 
 router.post('/idcheck',idCheck,(req,res)=>{
     res.send({
@@ -20,7 +22,9 @@ router.post('/idcheck',idCheck,(req,res)=>{
 
 router.post('/',idCheck,emailCheck,signUp,postEmail);
 
-router.get('/verify/:email',emailVerify)
+router.get('/verify/:email',validEmailConfirmaition,emailVerifySender);
+
+router.put('/verify/:email',emailAuthentication);
 //logoutCHecker추가해야함;
 module.exports = router;
 

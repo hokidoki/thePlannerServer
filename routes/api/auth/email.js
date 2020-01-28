@@ -22,7 +22,7 @@ module.exports = {
             from: 'zhtmah1@gmail.com',
             to: `${email}`,
             subject: '더 플래너 가입인증 메일',
-            html: `<p>가입 인증 메일 입니다. <a href="http://localhost:3000/signup/verify/${email}?code=${secretCode}">여기</a> 를 클릭해주세요.</p>`
+            html: `<p>가입 인증 메일 입니다. <a href="http://localhost:3001/signup/verify/${email}?secretcode=${secretCode}">여기</a> 를 클릭해주세요.</p>`
           };
           
           transporter.sendMail(mailOptions, function(error, info){

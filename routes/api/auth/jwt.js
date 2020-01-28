@@ -1,7 +1,27 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = {
-    sender : (req,res,next)=>{
+    decoder :(token,sign)=>{
+        return jwt.decode(toekn,sign);
+    }
+    ,emailVerifySender : (req,res,next) =>{
+        const { email } = req.params;
+        const { secretcode } = req.query.secretcode;
+        const sign = req.app.get('jwt-secret'); 
+
+        const token = jwt.sign({
+            email : email,
+            secretcode, secretcode
+        },sign,{
+            expiresIn : '1m'
+        })
+
+        res.cookie('verifyToken',token);
+        res.send({
+            verify : true
+        })
+    }
+    ,sender : (req,res,next)=>{
         const { id } = req.body;    
         const sign = req.app.get('jwt-secret'); 
         console.log(`verify : ${id}`);

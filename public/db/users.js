@@ -1,6 +1,6 @@
 const mysql_dbc = require('./dbConfig')();
 const connection = mysql_dbc.init();
-
+const decoder = require('../../routes/api/auth/jwt').decoder;
 
 module.exports = {
     userInfoCheck : (req,res,next) =>{
@@ -94,9 +94,9 @@ module.exports = {
             }
         })
     },
-    emailVerify : (req,res,next)=>{
+    validEmailConfirmaition : (req,res,next)=>{
         const email = req.params.email;
-        const secretcode = req.query.code;
+        const secretcode = req.query.secretcode;
         
         const validEmailConfirmaition = `call validEmailConfirmaition('${email}')`;
 
@@ -106,8 +106,8 @@ module.exports = {
                 next(err);
             }else{
                 if(result[0][0].valid === 1){
-                    const emailAuthentication = `call emailAuthentication('${email}','${secretcode}')`;
-                    connection.query(emailAuthentication,(err,verifyResult)=>{
+                    const emailCodeVerification = `call emailCodeVerification('${email}','${secretcode}')`;
+                    connection.query(emailCodeVerification,(err,verifyResult)=>{
                         if(err){
                             console.log(err);
                             next(err);
@@ -115,8 +115,9 @@ module.exports = {
                             console.log(verifyResult);
                             if(verifyResult[0][0].verifyCheck === 1){
                                 //제대로 인증이 된 경우
-                                res.status(301).redirect('http://localhost:3001');
+                                next();
                             }else{
+                                res.status(403).send();
                                 //트랜잭션 오류 .
                             }
                         }
@@ -132,6 +133,29 @@ module.exports = {
             console.log(result);
         })
         
+    },emailAuthentication : (req,res,next) =>{
+        try{
+            const token = req.cookies.verifyToken;
+            const sign = req.app.get('jwt-secret');
+            const decoded = decoder(token,sign);
+            const {email,secretcode} = decoded;
+    
+            const procedure = `call emailAutentication('${email}','${secretcode}')`;
+    
+            connection.query(procedure,(err,result)=>{
+                if(err){
+                    console.log(err);
+                    next(err);
+                }else{
+                    res.send({
+                        success : true
+                    })
+                }
+            })
+        }catch(e){
+            console.log(`token Error : ${e}`);
+            next(e);
+        }
     }
 }
 
