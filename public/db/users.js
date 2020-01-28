@@ -101,6 +101,7 @@ module.exports = {
         const validEmailConfirmaition = `call validEmailConfirmaition('${email}')`;
 
         connection.query(validEmailConfirmaition,(err,result)=>{
+            console.log(result);
             if(err){
                 console.log(err);
                 next(err);
@@ -115,6 +116,7 @@ module.exports = {
                             console.log(verifyResult);
                             if(verifyResult[0][0].verifyCheck === 1){
                                 //제대로 인증이 된 경우
+                                console.log(email);
                                 next();
                             }else{
                                 res.status(403).send();
@@ -124,7 +126,10 @@ module.exports = {
                     })
                 }else if(result[0][0].valid === 2){
                     //이미 인증된 이메일인 경우 
-                    next(new Error("잘 못된 경로입니다."));
+                    res.send({
+                        verify : false,
+                        reason : "already verified."
+                    })
                 }else{
                     //이메일이 없는 경우
                     next(new Error("잘 못된 경로입니다."));
@@ -138,22 +143,23 @@ module.exports = {
             const token = req.cookies.verifyToken;
             const sign = req.app.get('jwt-secret');
             const decoded = decoder(token,sign);
-            const {email,secretcode} = decoded;
+            const {email} = decoded;
     
-            const procedure = `call emailAutentication('${email}','${secretcode}')`;
+            const procedure = `call emailAutentication('${email}')`;
     
-            connection.query(procedure,(err,result)=>{
-                if(err){
-                    console.log(err);
-                    next(err);
-                }else{
-                    res.send({
-                        success : true
-                    })
-                }
+            connection.query(procedure,(err,authentication)=>{
+                    if(authentication[0][0].verifyCheck  === 1){
+                        res.send({
+                            autentication : true
+                        })
+                    }else{
+                        res.status(402).send({
+                            autentication : false
+                        })
+                    }
             })
         }catch(e){
-            console.log(`token Error : ${e}`);
+            console.log(e);
             next(e);
         }
     }

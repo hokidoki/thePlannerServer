@@ -2,16 +2,15 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
     decoder :(token,sign)=>{
-        return jwt.decode(toekn,sign);
+        return jwt.decode(token,sign);
     }
-    ,emailVerifySender : (req,res,next) =>{
+    ,verifyEmailTokenSender : (req,res,next) =>{
         const { email } = req.params;
         const { secretcode } = req.query.secretcode;
         const sign = req.app.get('jwt-secret'); 
 
         const token = jwt.sign({
             email : email,
-            secretcode, secretcode
         },sign,{
             expiresIn : '1m'
         })
